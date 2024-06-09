@@ -48,16 +48,13 @@
         from = header.value;
       }
     }
-    if (mail.payload?.parts?.length) {
-      body = decodeBody(mail.payload);
-    }
+   
   
     return {
       id: mail.id,
       snippet: mail.snippet,
       subject,
       from,
-      body,
     };
   }
 
