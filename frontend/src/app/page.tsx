@@ -1,30 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import LoginButton from '../components/ui/loginButton';
-
 
 export default function Home() {
   const [openAIKey, setOpenAIKey] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
-
-  useEffect(() => {
-    const tokens = localStorage.getItem('tokens');
-    const userEmail = localStorage.getItem('userEmail');
-    if (tokens && userEmail) {
-      console.log("tokens :", tokens)
-    }
-  }, []);
 
   const handleProceed = () => {
     if (!openAIKey) {
       setError('Please enter your OpenAI API key');
       return;
     }
-
     localStorage.setItem('openAIKey', openAIKey);
-    
+
+     // so we are handling auth with backend url and getting the accessToken (TODO: need to implement this in the frontend)
+
     // window.location.href = `http://localhost:8000/auth`; // local url
     window.location.href = `https://email-classifications-gpt.onrender.com/auth`; // deployed url
   };
@@ -41,7 +31,6 @@ export default function Home() {
             value={openAIKey}
             onChange={(e) => setOpenAIKey(e.target.value)}
           />
-
         </div>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
         <button

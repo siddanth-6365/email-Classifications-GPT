@@ -13,7 +13,6 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerClose,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -203,7 +202,6 @@ const EmailsPage: React.FC = () => {
                 <AvatarFallback>DP</AvatarFallback>
               </Avatar>
               <div>
-                {/* <div className="text-white">{profile.name}</div> */}
                 <div className="text-gray-400">{profile?.emailAddress}</div>
               </div>
             </div>
@@ -245,7 +243,6 @@ const EmailsPage: React.FC = () => {
       <Drawer open={isDrawerOpen} onClose={handleDrawerClose}>
         <DrawerContent>
           <DrawerHeader>
-
             <DrawerTitle>{selectedEmail?.subject}</DrawerTitle>
             <DrawerDescription>From: {selectedEmail?.from}</DrawerDescription>
             <DrawerDescription>

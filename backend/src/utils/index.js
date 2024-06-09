@@ -36,9 +36,35 @@
     }
   }
 
+  function extractEmailDetails(mail) {
+    let subject = "";
+    let from = "";
+    let body = "";
+  
+    for (const header of mail.payload.headers) {
+      if (header.name === "Subject") {
+        subject = header.value;
+      } else if (header.name === "From") {
+        from = header.value;
+      }
+    }
+    if (mail.payload?.parts?.length) {
+      body = decodeBody(mail.payload);
+    }
+  
+    return {
+      id: mail.id,
+      snippet: mail.snippet,
+      subject,
+      from,
+      body,
+    };
+  }
+
   module.exports = {
     createConfig,
     oAuth2Client,
     SCOPES,
-    readMailByid
+    readMailByid,
+    extractEmailDetails
   };
