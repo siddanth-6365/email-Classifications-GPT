@@ -2,7 +2,7 @@ const express = require("express");
 const routes = require("./routes");
 const session = require("express-session");
 const { oAuth2Client, SCOPES } = require("../src/utils");
-const cors = require("cors")
+const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
@@ -18,7 +18,7 @@ app.use(
 );
 
 app.get("/", async (req, res) => {
-  res.json({"working in port" : process.env.PORT});
+  res.json({ "working in port": process.env.PORT });
 });
 
 app.get("/auth", (req, res) => {
@@ -35,11 +35,14 @@ app.get("/oauth2callback", async (req, res) => {
   try {
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
-    req.session.tokens = tokens;  
-    // Redirect to frontend with the accessToken as a query parameter
-    const redirectUrl = new URL("http://localhost:4000/emails"); // Your frontend URL
+    req.session.tokens = tokens;
+
+    const redirectUrl = new URL(
+      " https://email-classifications-gpt.vercel.app/emails"
+    ); // deployed url
+    // const redirectUrl = new URL("http://localhost:4000/emails"); // Your frontend URL
     redirectUrl.searchParams.set("accessToken", tokens.access_token);
-    res.redirect(redirectUrl.toString()); 
+    res.redirect(redirectUrl.toString());
   } catch (error) {
     res.status(500).send("Authentication failed");
   }

@@ -34,9 +34,8 @@ const EmailsPage: React.FC = () => {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const BACKEND_URL = "http://localhost:8000";
-
-
+  // const BACKEND_URL = "http://localhost:8000"; // local
+  const BACKEND_URL = "https://email-classifications-gpt.onrender.com"
 
   const fetchProfile = async () => {
     setIsLoading(true)
@@ -191,7 +190,7 @@ const EmailsPage: React.FC = () => {
   }, []);
 
   return (
-  
+
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
       {loading ? (
         <LoadingSpinner className="animate-spin" />
@@ -264,7 +263,7 @@ const EmailsPage: React.FC = () => {
         </DrawerContent>
       </Drawer>
     </div>
-  
+
   );
 };
 

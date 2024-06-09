@@ -24,7 +24,9 @@ export default function Home() {
     }
 
     localStorage.setItem('openAIKey', openAIKey);
-    window.location.href = `http://localhost:8000/auth`; 
+    
+    // window.location.href = `http://localhost:8000/auth`; // local url
+    window.location.href = `https://email-classifications-gpt.onrender.com/auth`; // deployed url
   };
 
   return (
