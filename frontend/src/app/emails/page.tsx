@@ -27,10 +27,10 @@ const EmailsPage: React.FC = () => {
   const [emails, setEmails] = useState([]);
   const [maxResults, setMaxResults] = useState(15);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedEmail, setSelectedEmail] = useState<EmailData | null>(null);
+  const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
   const [loading, setIsLoading] = useState(false);
   const [isclassify, setisclassify] = useState(false)
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState<any>({});
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -103,8 +103,12 @@ const EmailsPage: React.FC = () => {
   const handleCardClick = async (email: EmailData) => {
     setIsLoading(true);
     if (isclassify) {
-      const res = emails.find((em) => em.id = email.id);
-      setSelectedEmail(res);
+      const res = emails.find((em:any) => em.id === email.id);
+      if (res) {
+        setSelectedEmail(res);
+      } else {
+        console.error("Email not found");
+      }
       setIsDrawerOpen(true);
       setIsLoading(false);
     } else {
@@ -198,7 +202,7 @@ const EmailsPage: React.FC = () => {
               </Avatar>
               <div>
                 {/* <div className="text-white">{profile.name}</div> */}
-                <div className="text-gray-400">{profile.emailAddress}</div>
+                <div className="text-gray-400">{profile?.emailAddress}</div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -219,7 +223,7 @@ const EmailsPage: React.FC = () => {
               </SelectContent>
             </Select>
             <div className="flex flex-col w-full space-y-3">
-              {emails.map((email) => (
+              {emails.map((email:any) => (
                 <Card key={email.id} onClick={() => handleCardClick(email)} className="bg-gray-800 p-4 border border-gray-700">
                   <CardContent >
                     <div className="text-white flex justify-between"><p>Email ID: {email.id}</p>
