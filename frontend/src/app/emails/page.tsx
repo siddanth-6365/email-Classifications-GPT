@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,20 +36,7 @@ const EmailsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const BACKEND_URL = "http://localhost:8000";
 
-  useEffect(() => {
-    fetchEmails();
-  }, [maxResults]);
 
-  useEffect(() => {
-    const accessTokenFromUrl = searchParams.get("accessToken");
-    if (accessTokenFromUrl) {
-      localStorage.setItem("accessToken", accessTokenFromUrl);
-      fetchProfile();
-      fetchEmails();
-    } else {
-      router.push("/");
-    }
-  }, []);
 
   const fetchProfile = async () => {
     setIsLoading(true)
@@ -103,7 +90,7 @@ const EmailsPage: React.FC = () => {
   const handleCardClick = async (email: EmailData) => {
     setIsLoading(true);
     if (isclassify) {
-      const res = emails.find((em:any) => em.id === email.id);
+      const res = emails.find((em: any) => em.id === email.id);
       if (res) {
         setSelectedEmail(res);
       } else {
@@ -188,7 +175,23 @@ const EmailsPage: React.FC = () => {
 
   }
 
+  useEffect(() => {
+    fetchEmails();
+  }, [maxResults]);
+
+  useEffect(() => {
+    const accessTokenFromUrl = searchParams.get("accessToken");
+    if (accessTokenFromUrl) {
+      localStorage.setItem("accessToken", accessTokenFromUrl);
+      fetchProfile();
+      fetchEmails();
+    } else {
+      router.push("/");
+    }
+  }, []);
+
   return (
+    <Suspense>
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
       {loading ? (
         <LoadingSpinner className="animate-spin" />
@@ -223,7 +226,7 @@ const EmailsPage: React.FC = () => {
               </SelectContent>
             </Select>
             <div className="flex flex-col w-full space-y-3">
-              {emails.map((email:any) => (
+              {emails.map((email: any) => (
                 <Card key={email.id} onClick={() => handleCardClick(email)} className="bg-gray-800 p-4 border border-gray-700">
                   <CardContent >
                     <div className="text-white flex justify-between"><p>Email ID: {email.id}</p>
@@ -261,6 +264,7 @@ const EmailsPage: React.FC = () => {
         </DrawerContent>
       </Drawer>
     </div>
+    </Suspense>
   );
 };
 
