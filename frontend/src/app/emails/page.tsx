@@ -38,6 +38,7 @@ const EmailsPage: React.FC = () => {
   const BACKEND_URL = "https://email-classifications-gpt.onrender.com"
 
   const fetchProfile = async () => {
+    console.log("fetching profile")
     setIsLoading(true)
     try {
       const accessToken = localStorage.getItem("accessToken");
@@ -59,13 +60,11 @@ const EmailsPage: React.FC = () => {
   }
 
   const fetchEmails = async () => {
+    console.log("fetching emails")
     setIsLoading(true);
     try {
       const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        router.push("/");
-        return;
-      }
+
       const response = await fetch(
         `${BACKEND_URL}/api/mails?maxResults=${maxResults}`,
         {
@@ -185,6 +184,7 @@ const EmailsPage: React.FC = () => {
       fetchProfile();
       fetchEmails();
     } else {
+      console.log("no accessToken")
       router.push("/");
     }
   }, []);
