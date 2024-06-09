@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect,Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -191,7 +191,7 @@ const EmailsPage: React.FC = () => {
   }, []);
 
   return (
-    <Suspense>
+  
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
       {loading ? (
         <LoadingSpinner className="animate-spin" />
@@ -264,7 +264,7 @@ const EmailsPage: React.FC = () => {
         </DrawerContent>
       </Drawer>
     </div>
-    </Suspense>
+  
   );
 };
 
