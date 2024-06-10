@@ -37,10 +37,12 @@ app.get("/oauth2callback", async (req, res) => {
     oAuth2Client.setCredentials(tokens);
     req.session.tokens = tokens;
     const redirectUrl = "";
-    if (process.env.CURRENT_STATE === "production") {
+    const CURRENT_STATE = "production";
+
+    if (CURRENT_STATE == "production") {
       redirectUrl = new URL(
-        " https://email-classifications-gpt.vercel.app/emails"
-      );
+        "https://email-classifications-gpt-149g.vercel.app/emails"
+      ); // deployed url
     } else {
       redirectUrl = new URL("http://localhost:4000/emails");
     }
