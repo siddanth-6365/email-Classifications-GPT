@@ -36,10 +36,14 @@ app.get("/oauth2callback", async (req, res) => {
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
     req.session.tokens = tokens;
-    const redirectUrl = new URL(
-      " https://email-classifications-gpt.vercel.app/emails"
-    ); // deployed url
-    // const redirectUrl = new URL("http://localhost:4000/emails"); // local URL
+    const redirectUrl = "";
+    if (process.env.CURRENT_STATE === "production") {
+      redirectUrl = new URL(
+        " https://email-classifications-gpt.vercel.app/emails"
+      );
+    } else {
+      redirectUrl = new URL("http://localhost:4000/emails");
+    }
     redirectUrl.searchParams.set("accessToken", tokens.access_token);
     res.redirect(redirectUrl.toString());
   } catch (error) {
