@@ -1,4 +1,3 @@
-// pages/emails.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -19,13 +18,13 @@ const EmailsPage: React.FC = () => {
   const [isClassify, setIsClassify] = useState(false);
   const [profile, setProfile] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const router = useRouter();
   // const searchParams = useSearchParams();
   const CURRENT_STATE = "production";
   const BACKEND_URL = CURRENT_STATE == "production" ? "https://email-classifications-gpt.onrender.com" : "http://localhost:8000";
 
-  const accessToken = localStorage.getItem('accessToken');
   const { data: profileData } = useFetch(`${BACKEND_URL}/api/profile`, {
     headers: {
       'Content-Type': 'application/json',
@@ -56,6 +55,16 @@ const EmailsPage: React.FC = () => {
 
     fetchEmails();
   }, [maxResults]);
+
+  useEffect(()=>{
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('Access token not found, try logging again');
+      router.push('/');
+    } else {
+      setAccessToken(token);
+    }
+  },[])
 
   const handleCardClick = async (email: EmailData) => {
     setLoading(true);
