@@ -1,131 +1,93 @@
+// pages/emails.tsx
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerClose,
-} from "@/components/ui/drawer";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-
-interface EmailData {
-  id: string;
-  snippet: string;
-  historyId: string;
-}
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import Profile from '@/components/Profile';
+import EmailCard from '@/components/EmailCard';
+import EmailDrawer from '@/components/EmailDrawer';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useFetch } from '@/hooks/useFetch';
+import { EmailData } from '@/lib/interfaces';
 
 const EmailsPage: React.FC = () => {
-  const [emails, setEmails] = useState([]);
+  const [emails, setEmails] = useState<EmailData[]>([]);
   const [maxResults, setMaxResults] = useState(15);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
-  const [loading, setIsLoading] = useState(false);
-  const [isclassify, setisclassify] = useState(false)
+  const [selectedEmail, setSelectedEmail] = useState<EmailData | null>(null);
+  const [isClassify, setIsClassify] = useState(false);
   const [profile, setProfile] = useState<any>({});
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  // const BACKEND_URL = "http://localhost:8000"; // local
-  const BACKEND_URL = "https://email-classifications-gpt.onrender.com"
+  // const searchParams = useSearchParams();
+  const CURRENT_STATE = "production";
+  const BACKEND_URL = CURRENT_STATE == "production" ? "https://email-classifications-gpt.onrender.com" : "http://localhost:8000";
 
-  const fetchProfile = async () => {
-    console.log("fetching profile")
-    setIsLoading(true)
-    try {
-      const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem('accessToken');
+  const { data: profileData } = useFetch(`${BACKEND_URL}/api/profile`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-      const response = await fetch(`${BACKEND_URL}/api/profile`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        }
-      });
+  useEffect(() => {
+    if (profileData) setProfile(profileData);
+  }, [profileData]);
 
-      const data = await response.json();
-      setProfile(data);
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const fetchEmails = async () => {
-    console.log("fetching emails")
-    setIsLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const response = await fetch(
-        `${BACKEND_URL}/api/mails?maxResults=${maxResults}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch emails");
+  useEffect(() => {
+    const fetchEmails = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/mails?maxResults=${maxResults}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch emails');
+        const data = await response.json();
+        setEmails(data);
+      } catch (err) {
+        console.error('Error fetching emails:', err);
+      } finally {
+        setLoading(false);
       }
-      const data = await response.json();
-      setEmails(data);
-    } catch (err) {
-      console.error("Error fetching emails:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    fetchEmails();
+  }, [maxResults]);
 
   const handleCardClick = async (email: EmailData) => {
-    setIsLoading(true);
-    if (isclassify) {
-      const res = emails.find((em: any) => em.id === email.id);
-      if (res) {
-        setSelectedEmail(res);
-      } else {
-        console.error("Email not found");
-      }
-      setIsDrawerOpen(true);
-      setIsLoading(false);
-    } else {
-
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-
-        if (!accessToken) {
-          router.push("/");
-          return;
+    setLoading(true);
+    try {
+      if (isClassify) {
+        const res = emails.find((em: EmailData) => em.id === email.id);
+        if (res) {
+          setSelectedEmail(res);
+        } else {
+          console.error('Email not found');
         }
-
-        const response = await fetch(`${BACKEND_URL}/api/mails/${email.id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ isFilter: true }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch email details");
-        }
-
-        const data = await response.json();
-        setSelectedEmail(data);
         setIsDrawerOpen(true);
-      } catch (err) {
-        console.error("Error fetching email:", err);
-      } finally {
-        setIsLoading(false);
+        setLoading(false);
+        return;
       }
+
+      const response = await fetch(`${BACKEND_URL}/api/mails/${email.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ isFilter: true }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch email details');
+      const data = await response.json();
+      setSelectedEmail(data);
+      setIsDrawerOpen(true);
+    } catch (err) {
+      console.error('Error fetching email:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,85 +96,52 @@ const EmailsPage: React.FC = () => {
     setSelectedEmail(null);
   };
 
-  const handleSelectChange = (value: string) => {
-    setMaxResults(Number(value));
-  };
+  const handleSelectChange = (value: string) => setMaxResults(Number(value));
 
   const handleClassify = async () => {
-    setIsLoading(true)
+    setLoading(true);
     try {
-      const accessToken = localStorage.getItem("accessToken");
-      const openAIKey = localStorage.getItem("openAIKey")
-      if (!accessToken || !openAIKey) {
-        router.push("/");
+      const openAIKey = localStorage.getItem('openAIKey');
+      if (!openAIKey) {
+        alert('OpenAI API key not found, please enter the key');
+        router.push('/openai');
         return;
       }
-
       const response = await fetch(`${BACKEND_URL}/api/classify`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ emails: emails, openAIKey: openAIKey }),
+        body: JSON.stringify({ emails, openAIKey }),
       });
-
-      console.log(response)
-      if (!response.ok) {
-        throw new Error("Failed to classify emails");
-      }
+      if (!response.ok) throw new Error('Failed to classify emails');
       const data = await response.json();
       setEmails(data);
-      setisclassify(true)
+      setIsClassify(true);
     } catch (err) {
-      console.error("Error fetching emails:", err);
+      console.error('Error fetching emails:', err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-
-  }
-
-  useEffect(() => {
-    fetchEmails();
-  }, [maxResults]);
-
-  useEffect(() => {
-    const accessTokenFromUrl = searchParams.get("accessToken");
-    if (accessTokenFromUrl) {
-      localStorage.setItem("accessToken", accessTokenFromUrl);
-      fetchProfile();
-      fetchEmails();
-    } else {
-      console.log("no accessToken")
-      router.push("/");
-    }
-  }, []);
+  };
 
   return (
-
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
       {loading ? (
         <LoadingSpinner className="animate-spin" />
       ) : (
         <>
           <nav className="flex items-center justify-between w-full max-w-4xl p-4">
-            <div className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarImage src="" alt="Deadpool" />
-                <AvatarFallback>DP</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="text-gray-400">{profile?.emailAddress}</div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="secondary" onClick={handleClassify} >Classify</Button>
-            </div>
+            <Profile emailAddress={profile?.emailAddress} />
+            <Button variant="secondary" onClick={handleClassify}>
+              Classify
+            </Button>
           </nav>
           <div className="flex flex-col items-start w-full max-w-2xl p-4 space-y-4">
             <Select onValueChange={handleSelectChange}>
               <SelectTrigger id="dropdown" aria-label="Select number of messages">
-                <SelectValue placeholder={maxResults} />
+                <SelectValue placeholder={String(maxResults)} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="5">5</SelectItem>
@@ -223,44 +152,15 @@ const EmailsPage: React.FC = () => {
               </SelectContent>
             </Select>
             <div className="flex flex-col w-full space-y-3">
-              {emails.map((email: any) => (
-                <Card key={email.id} onClick={() => handleCardClick(email)} className="bg-gray-800 p-4 border border-gray-700">
-                  <CardContent >
-                    <div className="text-white flex justify-between"><p>Email ID: {email.id}</p>
-                      {email.category && (
-                        <p className=" font-semibold">{email.category}</p>
-                      )}
-                    </div>
-                    <p className="text-gray-400">{email.snippet}</p>
-                  </CardContent>
-                </Card>
+              {emails.map((email) => (
+                <EmailCard key={email.id} email={email} onClick={handleCardClick} />
               ))}
             </div>
           </div>
         </>
       )}
-
-      <Drawer open={isDrawerOpen} onClose={handleDrawerClose}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{selectedEmail?.subject}</DrawerTitle>
-            <DrawerDescription>From: {selectedEmail?.from}</DrawerDescription>
-            <DrawerDescription>
-              {selectedEmail?.category && `Category: ${selectedEmail.category}`}
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 prose prose-sm prose-gray dark:prose-invert max-w-none">
-            <p>{selectedEmail?.snippet}</p>
-          </div>
-          <DrawerFooter>
-            <DrawerClose asChild>
-              <Button variant="outline" onClick={handleDrawerClose}>Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <EmailDrawer email={selectedEmail} isOpen={isDrawerOpen} onClose={handleDrawerClose} />
     </div>
-
   );
 };
 

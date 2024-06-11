@@ -36,8 +36,9 @@ app.get("/oauth2callback", async (req, res) => {
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
     req.session.tokens = tokens;
+
     const redirectUrl = new URL(
-      "https://email-classifications-gpt-149g.vercel.app/emails"
+      "https://email-classifications-gpt-149g.vercel.app/openai"
     ); // deployed url
     redirectUrl.searchParams.set("accessToken", tokens.access_token);
     res.redirect(redirectUrl.toString());
