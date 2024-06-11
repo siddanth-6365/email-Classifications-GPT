@@ -18,7 +18,7 @@ const EmailsPage: React.FC = () => {
   const [isClassify, setIsClassify] = useState(false);
   const [profile, setProfile] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  // const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const router = useRouter();
   // const searchParams = useSearchParams();
@@ -28,7 +28,7 @@ const EmailsPage: React.FC = () => {
   const { data: profileData } = useFetch(`${BACKEND_URL}/api/profile`, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
     },
   });
 
@@ -40,6 +40,7 @@ const EmailsPage: React.FC = () => {
     const fetchEmails = async () => {
       setLoading(true);
       try {
+        const accessToken = localStorage.getItem('accessToken');
         const response = await fetch(`${BACKEND_URL}/api/mails?maxResults=${maxResults}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -56,15 +57,15 @@ const EmailsPage: React.FC = () => {
     fetchEmails();
   }, [maxResults]);
 
-  useEffect(()=>{
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('Access token not found, try logging again');
-      router.push('/');
-    } else {
-      setAccessToken(token);
-    }
-  },[])
+  // useEffect(()=>{
+  //   const accessToken = localStorage.getItem('accessToken');
+  //   if (!token) {
+  //     alert('Access token not found, try logging again');
+  //     router.push('/');
+  //   } else {
+  //     setAccessToken(token);
+  //   }
+  // },[])
 
   const handleCardClick = async (email: EmailData) => {
     setLoading(true);
@@ -80,7 +81,7 @@ const EmailsPage: React.FC = () => {
         setLoading(false);
         return;
       }
-
+      const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${BACKEND_URL}/api/mails/${email.id}`, {
         method: 'POST',
         headers: {
@@ -116,6 +117,7 @@ const EmailsPage: React.FC = () => {
         router.push('/openai');
         return;
       }
+      const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${BACKEND_URL}/api/classify`, {
         method: 'POST',
         headers: {
