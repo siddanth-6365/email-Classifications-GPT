@@ -7,65 +7,52 @@ import Profile from '@/components/Profile';
 import EmailCard from '@/components/EmailCard';
 import EmailDrawer from '@/components/EmailDrawer';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useFetch } from '@/hooks/useFetch';
 import { EmailData } from '@/lib/interfaces';
 
 const EmailsPage: React.FC = () => {
   const [emails, setEmails] = useState<EmailData[]>([]);
-  const [maxResults, setMaxResults] = useState(15);
+  const [maxResults, setMaxResults] = useState(10);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<EmailData | null>(null);
   const [isClassify, setIsClassify] = useState(false);
   const [profile, setProfile] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  // const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const router = useRouter();
-  // const searchParams = useSearchParams();
   const CURRENT_STATE = "production";
   const BACKEND_URL = CURRENT_STATE == "production" ? "https://email-classifications-gpt.onrender.com" : "http://localhost:8000";
 
-  const { data: profileData } = useFetch(`${BACKEND_URL}/api/profile`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-    },
-  });
+  const fetchProfile = async () => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${BACKEND_URL}/api/profile`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch profile');
+      const data = await response.json();
+      setProfile(data);
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    }
 
-  useEffect(() => {
-    if (profileData) setProfile(profileData);
-  }, [profileData]);
+  }
 
-  useEffect(() => {
-    const fetchEmails = async () => {
-      setLoading(true);
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        const response = await fetch(`${BACKEND_URL}/api/mails?maxResults=${maxResults}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!response.ok) throw new Error('Failed to fetch emails');
-        const data = await response.json();
-        setEmails(data);
-      } catch (err) {
-        console.error('Error fetching emails:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmails();
-  }, [maxResults]);
-
-  // useEffect(()=>{
-  //   const accessToken = localStorage.getItem('accessToken');
-  //   if (!token) {
-  //     alert('Access token not found, try logging again');
-  //     router.push('/');
-  //   } else {
-  //     setAccessToken(token);
-  //   }
-  // },[])
+  const fetchEmails = async () => {
+    setLoading(true);
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${BACKEND_URL}/api/mails?maxResults=${maxResults}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch emails');
+      const data = await response.json();
+      setEmails(data);
+    } catch (err) {
+      console.error('Error fetching emails:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCardClick = async (email: EmailData) => {
     setLoading(true);
@@ -136,6 +123,15 @@ const EmailsPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEmails();
+  }, [maxResults]);
+
+  useEffect(() => {
+    fetchProfile();
+    fetchEmails();
+  }, [])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
